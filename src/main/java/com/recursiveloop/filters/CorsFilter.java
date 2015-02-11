@@ -1,12 +1,12 @@
-// This file is part of JLoop-web and is property of Recursive Loop Ltd.
+// This file is property of Recursive Loop Ltd.
 //
 // Author: Rob Jinman
 // Web: http://recursiveloop.org
-// Copyright Recursive Loop Ltd 2014
-// Copyright Rob Jinman 2014
+// Copyright Recursive Loop Ltd 2015
+// Copyright Rob Jinman 2015
 
 
-package com.jloopweb.filters;
+package com.recursiveloop.filters;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.logging.Level;
 
 
 /**
-* Implements Cross-Origin Resource Sharing (CORS), the standard way of bypassing a web browser's Same Origin Policy (SOP).
+* Implements Cross-Origin Resource Sharing (CORS), the standard way of circumventing a web browser's Same Origin Policy (SOP).
 */
 public class CorsFilter implements Filter {
   private final static Logger m_logger = Logger.getLogger(CorsFilter.class.getName());

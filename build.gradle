@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+def servletSpec = '3.0.1'
+
+repositories {
+   mavenCentral()
+}
+
+configurations.all {
+  resolutionStrategy {
+    failOnVersionConflict()
+  }
+
+  transitive = true
+}
+
+dependencies {
+  compile "javax.servlet:javax.servlet-api:${servletSpec}"
+
+  testCompile 'junit:junit:4.12'
+}
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}

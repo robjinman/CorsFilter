@@ -10,6 +10,7 @@ package com.recursiveloop.filters;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -88,17 +89,31 @@ public class CorsFilter implements Filter {
     String origin = request.getHeader("Origin");
     if (origin != null) {
 
+      boolean matchFound = false;
+      for (String s : m_allowedOrigins) {
+        if (match(origin, s)) {
+          matchFound = true;
+          break;
+        }
+      }
+
+      if (!matchFound) {
+        chain.doFilter(request, response);
+        return;
+      }
+
       // Handle preflight requests
-      if (request.getMethod().equals("OPTIONS")) {
+      if (request.getMethod() != null && request.getMethod().equals("OPTIONS")) {
         String method = request.getHeader("Access-Control-Request-Method");
         String strHeaders = request.getHeader("Access-Control-Request-Headers");
 
-        if (method == null || strHeaders == null) {
+        if (method == null) {
           chain.doFilter(request, response);
           return;
         }
 
-        List<String> headers = Arrays.asList(strHeaders.split("\\s*,\\s*"));
+        List<String> headers = strHeaders == null ?
+          new ArrayList<String>() : Arrays.asList(strHeaders.split("\\s*,\\s*"));
 
         if (!m_lstAllowedMethods.contains(method.toLowerCase())) {
           chain.doFilter(request, response);
@@ -112,22 +127,16 @@ public class CorsFilter implements Filter {
           }
         }
 
+        response.setHeader("Access-Control-Allow-Methods", m_allowedMethods);
+        response.setHeader("Access-Control-Allow-Headers", m_allowedHeaders);
         response.setHeader("Access-Control-Max-Age", m_preflightMaxAge);
       }
 
-      boolean matchFound = false;
-      for (String s : m_allowedOrigins) {
-        if (matchFound = match(origin, s)) {
-          response.setHeader("Access-Control-Allow-Origin", origin);
-          break;
-        }
-      }
+      response.setHeader("Access-Control-Allow-Origin", origin);
+      response.setHeader("Access-Control-Expose-Headers", m_exposedHeaders);
 
-      if (matchFound) {
-        response.setHeader("Access-Control-Allow-Methods", m_allowedMethods);
-        response.setHeader("Access-Control-Allow-Headers", m_allowedHeaders);
-        response.setHeader("Access-Control-Expose-Headers", m_exposedHeaders);
-        response.setHeader("Access-Control-Allow-Credentials", m_supportCredentials ? "true" : "false");
+      if (m_supportCredentials) {
+        response.setHeader("Access-Control-Allow-Credentials", "true");
       }
     }
 

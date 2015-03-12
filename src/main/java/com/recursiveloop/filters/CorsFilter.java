@@ -42,6 +42,7 @@ public class CorsFilter implements Filter {
   /**
   * Initialises the filter.
   */
+  @Override
   public void init(FilterConfig config) throws ServletException {
     String sAllowedOrigins = config.getInitParameter("cors.allowed.origins");
     String sAllowedMethods = config.getInitParameter("cors.allowed.methods");
@@ -80,6 +81,7 @@ public class CorsFilter implements Filter {
   /**
   * Modifies the response accordingly and passes it to the next filter in the chain.
   */
+  @Override
   public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
     throws IOException, ServletException {
 
@@ -146,6 +148,7 @@ public class CorsFilter implements Filter {
   /**
   * Performs cleanup operations.
   */
+  @Override
   public void destroy() {}
 
   /**

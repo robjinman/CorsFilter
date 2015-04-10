@@ -82,13 +82,13 @@ public class CorsFilter implements Filter {
   * Modifies the response accordingly and passes it to the next filter in the chain.
   */
   @Override
-  public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException {
 
-    HttpServletRequest request = (HttpServletRequest)req;
-    HttpServletResponse response = (HttpServletResponse)res;
+    HttpServletRequest req = (HttpServletRequest)request;
+    HttpServletResponse res = (HttpServletResponse)response;
 
-    String origin = request.getHeader("Origin");
+    String origin = req.getHeader("Origin");
     if (origin != null) {
 
       boolean matchFound = false;
@@ -100,17 +100,17 @@ public class CorsFilter implements Filter {
       }
 
       if (!matchFound) {
-        chain.doFilter(request, response);
+        chain.doFilter(req, res);
         return;
       }
 
       // Handle preflight requests
-      if (request.getMethod() != null && request.getMethod().equals("OPTIONS")) {
-        String method = request.getHeader("Access-Control-Request-Method");
-        String strHeaders = request.getHeader("Access-Control-Request-Headers");
+      if (req.getMethod() != null && req.getMethod().equals("OPTIONS")) {
+        String method = req.getHeader("Access-Control-Request-Method");
+        String strHeaders = req.getHeader("Access-Control-Request-Headers");
 
         if (method == null) {
-          chain.doFilter(request, response);
+          chain.doFilter(req, res);
           return;
         }
 
@@ -118,31 +118,31 @@ public class CorsFilter implements Filter {
           new ArrayList<String>() : Arrays.asList(strHeaders.split("\\s*,\\s*"));
 
         if (!m_lstAllowedMethods.contains(method.toLowerCase())) {
-          chain.doFilter(request, response);
+          chain.doFilter(req, res);
           return;
         }
 
         for (String hdr : headers) {
           if (!m_lstAllowedHeaders.contains(hdr.toLowerCase())) {
-            chain.doFilter(request, response);
+            chain.doFilter(req, res);
             return;
           }
         }
 
-        response.setHeader("Access-Control-Allow-Methods", m_allowedMethods);
-        response.setHeader("Access-Control-Allow-Headers", m_allowedHeaders);
-        response.setHeader("Access-Control-Max-Age", m_preflightMaxAge);
+        res.setHeader("Access-Control-Allow-Methods", m_allowedMethods);
+        res.setHeader("Access-Control-Allow-Headers", m_allowedHeaders);
+        res.setHeader("Access-Control-Max-Age", m_preflightMaxAge);
       }
 
-      response.setHeader("Access-Control-Allow-Origin", origin);
-      response.setHeader("Access-Control-Expose-Headers", m_exposedHeaders);
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Expose-Headers", m_exposedHeaders);
 
       if (m_supportCredentials) {
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
       }
     }
 
-    chain.doFilter(request, response);
+    chain.doFilter(req, res);
   }
 
   /**

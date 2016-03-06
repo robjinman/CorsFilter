@@ -1,29 +1,111 @@
 apply plugin: "java"
+apply plugin: "distribution"
+apply plugin: "maven-publish"
+apply plugin: "com.recursiveloop.buildcommon"
 
-def servletSpec = "3.0.1"
+ext {
+  buildcommonVersion = "0.1-SNAPSHOT"
+  artifactBaseName = "corsfilter"
+  artifactorySnapshotRepoUrl = "$artifactoryBaseUrl/libs-snapshot-local"
+  artifactoryReleaseRepoUrl = "$artifactoryBaseUrl/libs-release-local"
+}
+
+group = "com.recursiveloop"
+
+versions {
+  versionFile = file("version.properties")
+}
+
+buildscript {
+  def buildcommonVersion = "0.1-SNAPSHOT"
+  def artifactorySnapshotRepoUrl = "$artifactoryBaseUrl/libs-snapshot-local"
+  def artifactoryReleaseRepoUrl = "$artifactoryBaseUrl/libs-release-local"
+
+  repositories {
+    maven {
+      name "artifactory"
+      url buildcommonVersion.endsWith("-SNAPSHOT") ?
+        artifactorySnapshotRepoUrl : artifactoryReleaseRepoUrl
+
+      credentials {
+        username = artifactoryUsername
+        password = artifactoryPassword
+      }
+    }
+  }
+
+  dependencies {
+    classpath "com.recursiveloop.gradle:buildcommon:$buildcommonVersion"
+  }
+}
 
 repositories {
   mavenCentral()
   jcenter()
 }
 
-configurations.all {
-  resolutionStrategy {
-    failOnVersionConflict()
+dependencies {
+  compile "javax.servlet:javax.servlet-api:3.0.1"
 
-    force "org.hamcrest:hamcrest-core:1.3"
-  }
-
-  transitive = true
+  testCompile "junit:junit:4.12"
 }
 
-dependencies {
-  compile "javax.servlet:javax.servlet-api:${servletSpec}"
+task wrapper(type: Wrapper) {
+  gradleVersion = "2.6"
+}
 
-  testCompile "junit:junit:4.12",
-    "org.mockito:mockito-core:1.+"
+task sourcesJar(type: Jar) {
+  baseName artifactBaseName
+  classifier "sources"
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  baseName artifactBaseName
+  classifier "doc"
+  from javadoc.destinationDir
 }
 
 tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+}
+
+distributions {
+  main {
+    baseName = artifactBaseName
+
+    contents {
+      from { libsDir }
+    }
+  }
+}
+
+publishing {
+  publications {
+    buildcommon(MavenPublication) {
+      from components.java
+      artifactId "corsfilter"
+
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
+
+  repositories {
+    maven {
+      name "artifactory"
+      url project.version.toString().endsWith("-SNAPSHOT") ?
+        artifactorySnapshotRepoUrl : artifactoryReleaseRepoUrl
+
+      credentials {
+        username = artifactoryUsername
+        password = artifactoryPassword
+      }
+    }
+  }
 }

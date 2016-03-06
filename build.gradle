@@ -88,7 +88,7 @@ distributions {
 
 publishing {
   publications {
-    buildcommon(MavenPublication) {
+    corsfilter(MavenPublication) {
       from components.java
       artifactId "corsfilter"
 

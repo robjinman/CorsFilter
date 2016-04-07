@@ -4,7 +4,6 @@ apply plugin: "maven-publish"
 apply plugin: "com.recursiveloop.buildcommon"
 
 ext {
-  buildcommonVersion = "0.1-SNAPSHOT"
   artifactBaseName = "corsfilter"
   artifactorySnapshotRepoUrl = "$artifactoryBaseUrl/libs-snapshot-local"
   artifactoryReleaseRepoUrl = "$artifactoryBaseUrl/libs-release-local"
@@ -17,20 +16,18 @@ versions {
 }
 
 buildscript {
-  def buildcommonVersion = "0.1-SNAPSHOT"
+  def buildcommonVersion = "0.1.1-SNAPSHOT"
   def artifactorySnapshotRepoUrl = "$artifactoryBaseUrl/libs-snapshot-local"
   def artifactoryReleaseRepoUrl = "$artifactoryBaseUrl/libs-release-local"
 
   repositories {
     maven {
-      name "artifactory"
-      url buildcommonVersion.endsWith("-SNAPSHOT") ?
-        artifactorySnapshotRepoUrl : artifactoryReleaseRepoUrl
-
-      credentials {
-        username = artifactoryUsername
-        password = artifactoryPassword
-      }
+      name "artifactorySnapshot"
+      url artifactorySnapshotRepoUrl
+    }
+    maven {
+      name "artifactoryRelease"
+      url artifactoryReleaseRepoUrl
     }
   }
 
